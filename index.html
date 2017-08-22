@@ -1,0 +1,394 @@
+<html>
+<!-- worked on with obi-->
+<head>
+    <title>IT202</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.2.1/material.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/css/bootstrap-select.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/i18n/defaults-*.min.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.css" />
+    <link rel="stylesheet" href="webpage.css"></link>
+</head>
+
+<script>
+    $(document).ready(function() {
+        var html = "";
+        var html2 = "";
+        var jsonURL = "https://api.edmunds.com/api/vehicle/v2/makes?fmt=json&api_key=pjzezj4kxbnbxc83updquhzh&state=new";
+        $.getJSON(jsonURL)
+            .done(function(result) {
+                $.each(result.makes, function(i, v) {
+                    console.log(v.name);
+                    html2 += v.name;
+                    html += '<option value="' + v.name + '">' + v.name + '</option>'
+                });
+                $('#car2').append(html);
+                $('#car2').selectpicker('refresh');
+                $('#car2').selectpicker('val', html);
+            });
+        $("#MainPage").show();
+        $("#Enter").hide();
+        $("#SpecPage").hide();
+    });
+</script>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+                <a class="navbar-brand">Car APP</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a id="Main"> Main </a></li>
+                    <li><a id="DealerShip"> DealerShips </a></li>
+                    <li><a id="RecentlyViewed" onclick="readAll()"> Recently Viewed </a></li>
+                </ul>
+
+                <form class="text-right" id="form" style="display:none;">
+                    <input id="username" />
+                </form>
+
+                <div id="login" class="text-right">
+                    <button>Login with Google</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div id="MainPage">
+        <div class="jumbotron">
+            <h1 class="text-center">Select a Car For information</h1>
+        </div>
+
+        <div class="text-center">
+            <div id="car">
+                <select id="car2" class="selectpicker" onchange="select()"></select>
+            </div>
+            <br>
+            <div id="Model">
+                <select id="Model2" class="selectpicker" onchange="select2()"></select>
+            </div>
+            <br>
+            <div id="Year">
+                <select id="year2" class="selectpicker" onchange="select3()"></select>
+            </div>
+            <br>
+
+            <div id="Enter">
+                <button type="button" class="btn btn-default" id="submitbutton">SUBMIT</button>
+            </div>
+
+        </div>
+
+        <hr>
+        <div class="text-center">
+            <p>
+                Recently Viewed
+            </p>
+        </div>
+    </div>
+
+
+       <div id="SpecPage">
+        <div id="spec">
+            <div id="specs">
+                    <div class="container">
+                    </div>
+            </div>
+        </div>
+        
+         <div class= "text-center">
+        <div class="row">
+  <div class="col-lg-6">
+    <div class="input-group">
+      <span class="input-group-btn">
+        <button class="btn btn-secondary" type="button" onclick ="createMap()">Search!</button>
+      </span>
+      <input type="text" class="form-control" placeholder="Enter a zipcode">
+    </div>
+  </div>
+  </div>
+  </div>
+  <br>
+
+        <div id="map"></div>
+        <button onclick="read()">Read </button>
+        <button onclick="readAll()">Read all</button>
+        <button onclick="add()">Add data </button>
+        <button onclick="remove()">Delete data </button>
+    </div>
+    
+    <div id="RecentPage">
+        <p  id="indexDB">Recently Viewed</p>
+        
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+
+</body>
+
+    <script src="apps.js"></script>
+
+<script>
+    $("#Main").click(function() {
+        $("#MainPage").show();
+        $("#SpecPage").hide();
+        $("#RecentPage").hide();
+    });
+
+
+
+    $("#DealerShip").click(function() {
+        $("#MainPage").hide();
+        $("#RecentPage").hide();
+    });
+    
+    
+    $("#RecentlyViewed").click(function() {
+        $("#MainPage").hide();
+        $("#SpecPage").hide();
+        $("#RecentPage").show();
+    });
+
+
+
+
+    function select() {
+        var html = "";
+        $('#year2').children().remove();
+        $('#Model2').children().remove();
+
+        var x = document.getElementById("car2").value;
+        console.log(x);
+        var jsonURL = "https://api.edmunds.com/api/vehicle/v2/" + x + "/models?state=new&view=basic&fmt=json&api_key=pjzezj4kxbnbxc83updquhzh";
+
+        $.getJSON(jsonURL)
+            .done(function(result) {
+                $.each(result.models, function(i, v) {
+                    console.log(v.name);
+                    html += '<option value="' + v.name + '">' + v.name + '</option>'
+                });
+                $('#Model2').append(html);
+                $('#Model2').selectpicker('refresh');
+                $('#Model2').selectpicker('val', html);
+            });
+    }
+
+
+
+    function select2() {
+        var html = "";
+        var x = document.getElementById("car2").value;
+        var y = document.getElementById("Model2").value;
+        console.log(x);
+        var jsonURL = "https://api.edmunds.com/api/vehicle/v2/" + x + "/" + y + "?state=new&view=basic&fmt=json&api_key=pjzezj4kxbnbxc83updquhzh";
+
+        $.getJSON(jsonURL)
+            .done(function(result) {
+                $.each(result.years, function(i, v) {
+                    console.log(v.year);
+                    html += '<option value="' + v.year + '">' + v.year + '</option>'
+                });
+                $('#year2').append(html);
+                $('#year2').selectpicker('refresh');
+                $('#year2').selectpicker('val', html);
+            });
+    }
+
+    function select3() {
+
+        if (document.getElementById("year2").value != "" || document.getElementById("Model2").value != "") {
+            $("#Enter").show();
+
+        }
+    }
+    
+    function select4(){
+        var x = document.getElementById("car2").value;
+        var jsonURL = "https://api.edmunds.com/api/dealer/v2/dealers?zipcode=33756&make=" + x + "&api_key=pjzezj4kxbnbxc83updquhzh&fmt=json";
+        
+        
+        $.getJSON(jsonURL)
+            .done(function(result) {
+                $.each(result.dealers, function(i, v) {
+                    console.log(v.address.latitude);
+                    console.log(v.address.longitude);
+                });
+            });
+    }
+
+  
+    $("#Enter").click(function() {
+
+        $("#MainPage").hide();
+        $("#SpecPage").show();
+        $( ".container" ).empty();
+        var safetyhtml = "";
+        var categoryhtml = "";
+        var x = document.getElementById("car2").value;
+        var y = document.getElementById("Model2").value;
+        var z = document.getElementById("year2").value;
+
+        var safetyjsonURL = "https://api.edmunds.com/api/vehicle/v2/" + x + "/" + y + "/" + z + "/safety?fmt=json&api_key=pjzezj4kxbnbxc83updquhzh"
+        $.getJSON(safetyjsonURL)
+            .done(function(result) {
+                if (result.nhtsa == null) {
+                    $.each(result.iihs, function(i, v) {
+
+                                   safetyhtml +=   '<div class="col-sm-4">'+
+                         '<div class="panel panel-primary">'+
+                                       '<div class="panel-heading">'+
+                                        '<h3 class="panel-title">' +
+                                         v.category +
+                                         '</h3>'+
+                                         '</div>' +
+                                    '<div class="panel-body">'+
+                                         v.value+
+                                        '</div>'+
+                                        '</div>'+
+                                        '</div>';
+                                         
+                    
+                    });
+                }
+                else {
+                    console.log(result.nhtsa.overall)
+                    safetyhtml += result.nhtsa.overall;
+                    $.each(result.iihs, function(i, v) {
+                           
+                                   safetyhtml +=  '<div class="col-sm-4">'+
+                         '<div class="panel panel-primary">'+
+                                       '<div class="panel-heading">'+
+                                        '<h3 class="panel-title">' +
+                                         v.category +
+                                         '</h3>'+
+                                         '</div>' +
+                                    '<div class="panel-body">'+
+                                         v.value+
+                                        '</div>'+
+                                        '</div>'+
+                                        '</div>';
+                                
+                    });
+                }
+                $(".container").append(safetyhtml);
+            });
+    });
+
+
+
+    function createMap() {
+        var x = document.getElementById("car2").value;
+                x  = x.toString();
+
+        var y = $(".form-control").val();
+        y  = y.toString();
+        console.log(x);
+        console.log(y);
+
+
+        var jsonUrl = "https://api.edmunds.com/api/dealer/v2/dealers/?zipcode=";
+        var jsonUrl2 = "&radius=100&make=";
+        var jsonUr3 = "&state=new&pageNum=1&pageSize=5&sortby=distance%3AASC&view=basic&api_key=pjzezj4kxbnbxc83updquhzh";
+        jsonUrl = jsonUrl.concat(y,jsonUrl2,x,jsonUr3);
+                //clearMarkers();
+
+
+        
+
+        console.log(jsonUrl);
+
+        var loopHTML, loopStatus;
+
+        var map;
+        var arrMarkers = [];
+        initMap();
+
+        function initMap() {
+            vehicleMap = new google.maps.Map(document.getElementById('map'), {
+                zoom: 4,
+                center: {
+                    lat: 41.8781,
+                    lng: -87.6298
+                }
+            });
+}
+            //  make AJAX call to get abandoned Lexus vehicles
+            $.getJSON(jsonUrl)
+                .done(function(result) {
+                    console.log(result);
+
+                    //  loop through results
+                    $.each(result.dealers, function(i, v) {
+
+
+                        var marker = new google.maps.Marker({
+                            position: {
+                                lat: v.address.latitude,
+                                lng: v.address.longitude
+                            },
+                            map: vehicleMap,
+                            title: v.address.city
+                       
+ });
+                        arrMarkers.push(marker);
+                        marker.addListener('click', function() {
+                            infowindow.open(map, marker);
+                        });
+                       
+                        console.log(v);
+                        
+                         var contentString = '<div id="content">' +
+                        '<div id="siteNotice">' +
+                        '</div>' +
+                        '<h1 id="firstHeading" class="firstHeading">' +
+                        v.name + " " + 
+                        '</h1>' +
+                        '<div id="bodyContent">' +
+                        '<ul>' +
+                        '<li> Address ' + v.address.street + '</li>' +
+                        '<li> Sales Review ' + v.reviews.sales.overallRating + '</li>' +
+                        '<li> Service Number ' + v.reviews.service.overallRating + '</li>' +
+                        '</ul>' +
+                        '</div>' +
+                        '</div>';
+                    var infowindow = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+
+                    });
+
+                });
+
+        };
+        
+            function clearMarkers() {
+
+        $.each(arrmarkers, function(i, v) {
+            v.setMap(null);
+        })
+
+
+    }
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?callback=initMap">
+</script>
+
+</html>
